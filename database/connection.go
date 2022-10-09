@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func connectDb() *gorm.DB {
+func ConnectDb() *gorm.DB {
 	db, err := gorm.Open(postgres.Open("postgres://saikathalder:saikat123@localhost:5432/food-delivery"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database!")
@@ -23,7 +23,13 @@ func connectDb() *gorm.DB {
 
 func DbMiddleware(ctx *gin.Context) {
 	// setup connection with db
-	db := connectDb()
+	db := ConnectDb()
+
+	// If no db then it should throw error
+	if db == nil {
+		panic("Database instance not found!")
+	}
+
 	// Setting db as a variable in gin
 	ctx.Set("db", db)
 	ctx.Next()
