@@ -1,26 +1,18 @@
 package main
 
 import (
+	"foodDeliveryAppServer/controllers"
+	"foodDeliveryAppServer/database"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-type User struct {
-	gorm.Model
-	FirstName   string
-	LastName    string
-	Email       string
-	Password    string
-	PhoneNumber int
-	Address     string
-}
 
 func setupRouter() *gin.Engine {
 
+	// Route setup
 	r := gin.Default()
+	r.Use(database.DbMiddleware)
 
 	api := r.Group("/api")
 	// Health check
@@ -30,22 +22,18 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// Business
+	business := api.Group("/business")
+
+	// Business - Auth
+	businessAuth := business.Group("/auth")
+	businessAuth.POST("/login", controllers.LoginHandler)
+	businessAuth.POST("/sign-up", controllers.SignUpHandler)
+
 	return r
 }
 
-func connectDb() {
-	db, err := gorm.Open(postgres.Open("postgres://saikathalder:saikat123@localhost:5432/food-delivery"), &gorm.Config{})
-	if err != nil {
-		panic("Faild to connect database!")
-	}
-
-	db.AutoMigrate(&User{})
-}
-
 func main() {
-	// setup connection with db
-	connectDb()
-
 	// setup routes
 	r := setupRouter()
 
